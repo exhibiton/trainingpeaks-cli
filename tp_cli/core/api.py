@@ -44,7 +44,8 @@ class TrainingPeaksAPI:
         method: str,
         path: str,
         params: Optional[Dict[str, Any]] = None,
-        json_data: Optional[Dict[str, Any]] = None,
+        json_data: Optional[Any] = None,
+        expected_status: Optional[int] = None,
     ) -> Any:
         url = f"{self.base_url}{path}"
         last_error: Optional[Exception] = None
@@ -66,8 +67,13 @@ class TrainingPeaksAPI:
                 if response.status_code in (429, 500, 502, 503, 504):
                     raise requests.HTTPError(response.text, response=response)
                 response.raise_for_status()
+                if expected_status is not None and response.status_code != expected_status:
+                    raise APIError(
+                        f"API request returned status {response.status_code} for {method} {path}; "
+                        f"expected {expected_status}"
+                    )
 
-                if not response.text:
+                if response.status_code == 204 or not response.text:
                     return {}
                 return response.json()
             except (requests.RequestException, ValueError) as exc:
@@ -83,6 +89,9 @@ class TrainingPeaksAPI:
 
     def post(self, path: str, payload: Dict[str, Any]) -> Any:
         return self._request("POST", path, json_data=payload)
+
+    def put(self, path: str, payload: Any, expected_status: Optional[int] = None) -> Any:
+        return self._request("PUT", path, json_data=payload, expected_status=expected_status)
 
     def delete(self, path: str) -> Any:
         return self._request("DELETE", path)
@@ -108,3 +117,10 @@ class TrainingPeaksAPI:
 
     def get_athlete_settings(self, user_id: str) -> Any:
         return self.get(f"/fitness/v1/athletes/{user_id}/settings")
+
+    def put_speedzones(self, user_id: str, payload: list[Dict[str, Any]]) -> Any:
+        return self.put(
+            f"/fitness/v2/athletes/{user_id}/speedzones",
+            payload=payload,
+            expected_status=204,
+        )

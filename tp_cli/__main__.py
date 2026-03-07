@@ -10,6 +10,7 @@ from rich.console import Console
 
 from tp_cli import __version__
 from tp_cli.commands import analyze as analyze_commands
+from tp_cli.commands import threshold as threshold_commands
 from tp_cli.commands.auth import login_command, logout_command
 from tp_cli.commands.export import export_command
 from tp_cli.commands.fetch import fetch_command, get_command
@@ -84,6 +85,7 @@ app.command("upload")(upload_command)
 app.command("delete")(delete_command)
 app.command("export")(export_command)
 app.add_typer(analyze_commands.app, name="analyze")
+app.add_typer(threshold_commands.app, name="threshold")
 
 
 def main() -> None:
