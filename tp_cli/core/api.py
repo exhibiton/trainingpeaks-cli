@@ -124,3 +124,10 @@ class TrainingPeaksAPI:
             payload=payload,
             expected_status=204,
         )
+
+    def put_powerzones(self, user_id: str, payload: list[Dict[str, Any]]) -> Any:
+        return self.put(
+            f"/fitness/v2/athletes/{user_id}/powerzones",
+            payload=payload,
+            expected_status=204,
+        )
